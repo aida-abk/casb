@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
+import SiteHeader from "../components/site-header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,28 +28,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
-        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b">
-          <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 font-semibold">
-              <Image src="/casb-logo.png" alt="CASB logo" width={40} height={40} className="rounded-full border border-border object-cover" />
-              <span>CASB</span>
-            </Link>
-            <nav className="flex items-center gap-5 text-sm">
-              <Link href="/our-story" className="hover:underline">Our Story</Link>
-              <Link href="/team" className="hover:underline">Meet Our Team</Link>
-              <Link href="/explorer" className="hover:underline">Explorer</Link>
-              <Link href="/events" className="hover:underline">Events</Link>
-              <Link href="/celebrations" className="hover:underline">Celebrations</Link>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
         <main className="flex-1">{children}</main>
         <footer className="border-t">
-          <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground flex flex-col sm:flex-row sm:flex-wrap items-center justify-between gap-4">
             <p>© {new Date().getFullYear()} CASB — Central Asian Students at Brown</p>
             <div className="flex items-center gap-4">
               <Link href="/events" className="hover:underline">Join an event</Link>
               <Link href="/team" className="hover:underline">Contact leadership</Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <a href="mailto:casb@brown.edu" className="hover:underline">casb@brown.edu</a>
+              <a href="https://www.instagram.com/centralasiabrown/" target="_blank" rel="noopener noreferrer" className="hover:underline">Instagram</a>
+              <a href="https://t.me/+TlRMHnQXuUZiZTUy" target="_blank" rel="noopener noreferrer" className="hover:underline">Telegram</a>
             </div>
           </div>
         </footer>

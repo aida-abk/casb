@@ -1,15 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import type * as Leaflet from "leaflet";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
 
-const countries = [
-  { name: "Kazakhstan", flag: "🇰🇿", capital: "Astana", population: "19M", area: "2.7M km²", color: "bg-blue-500", fact: "Home to the world's largest space launch facility" },
-  { name: "Kyrgyzstan", flag: "🇰🇬", capital: "Bishkek", population: "6.5M", area: "200K km²", color: "bg-red-500", fact: "Known as the 'Switzerland of Central Asia' for its mountains" },
-  { name: "Tajikistan", flag: "🇹🇯", capital: "Dushanbe", population: "9.5M", area: "143K km²", color: "bg-green-500", fact: "93% of the country is mountainous" },
-  { name: "Turkmenistan", flag: "🇹🇲", capital: "Ashgabat", population: "6M", area: "488K km²", color: "bg-yellow-500", fact: "Home to the 'Gates of Hell' - a burning gas crater" },
-  { name: "Uzbekistan", flag: "🇺🇿", capital: "Tashkent", population: "34M", area: "447K km²", color: "bg-blue-600", fact: "Samarkand is one of the oldest inhabited cities in the world" },
-];
+// Country data with accurate information
+const countryData = {
+  Kazakhstan: {
+    capital: "Astana",
+    population: "19.4 million",
+    flag: "🇰🇿",
+    highlights: ["Largest landlocked country", "Rich oil and gas reserves", "Baikonur Cosmodrome"],
+    color: "#3B82F6", // Blue
+    description: "The largest Central Asian nation, known for its vast steppes and modern capital.",
+    iso_a3: "KAZ",
+  },
+  Kyrgyzstan: {
+    capital: "Bishkek",
+    population: "6.7 million",
+    flag: "🇰🇬",
+    highlights: ["Mountainous terrain", "Issyk-Kul Lake", "Nomadic heritage"],
+    color: "#10B981", // Emerald
+    description: "A mountainous country famous for its pristine lakes and nomadic culture.",
+    iso_a3: "KGZ",
+  },
+  Uzbekistan: {
+    capital: "Tashkent",
+    population: "35.6 million",
+    flag: "🇺🇿",
+    highlights: ["Silk Road cities", "Samarkand architecture", "Cotton production"],
+    color: "#F59E0B", // Amber
+    description: "Home to ancient Silk Road cities with stunning Islamic architecture.",
+    iso_a3: "UZB",
+  },
+  Tajikistan: {
+    capital: "Dushanbe",
+    population: "9.8 million",
+    flag: "🇹🇯",
+    highlights: ["Pamir Mountains", "Hydroelectric power", "Persian culture"],
+    color: "#EF4444", // Red
+    description: "A mountainous nation in the heart of Central Asia with rich Persian heritage.",
+    iso_a3: "TJK",
+  },
+  Turkmenistan: {
+    capital: "Ashgabat",
+    population: "6.1 million",
+    flag: "🇹🇲",
+    highlights: ["Natural gas reserves", "Karakum Desert", "Darvaza gas crater"],
+    color: "#8B5CF6", // Violet
+    description: 'Known for its vast natural gas reserves and the famous "Door to Hell" crater.',
+    iso_a3: "TKM",
+  },
+};
 
 const sections = [
   { href: "/explorer/music", title: "Music Hub", emoji: "🎵", desc: "Curated playlists and Song of the Month." },
@@ -22,51 +65,259 @@ const sections = [
 
 export default function ExplorerPage() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const [map, setMap] = useState<Leaflet.Map | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [geoJsonLayer, setGeoJsonLayer] = useState<Leaflet.GeoJSON | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const initMap = async () => {
+      const L = (await import("leaflet")).default;
+
+      // Fix for default markers
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+        iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+      });
+
+      if (mapRef.current && !map) {
+        const leafletMap = L.map(mapRef.current, {
+          center: [42.5, 64.5],
+          zoom: 4,
+          zoomControl: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
+          boxZoom: true,
+          keyboard: true,
+          dragging: true,
+          touchZoom: true,
+          attributionControl: false,
+        });
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "© OpenStreetMap contributors",
+          maxZoom: 19,
+        }).addTo(leafletMap);
+
+        try {
+          // Use Natural Earth data from a reliable CDN
+          const response = await fetch(
+            "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson",
+          );
+          const worldData = await response.json();
+
+          // Filter for Central Asian countries
+          const centralAsiaData: FeatureCollection<Geometry, any> = {
+            type: "FeatureCollection",
+            features: (worldData.features as Feature[]).filter((feature: Feature) => {
+              const props: any = feature.properties ?? {};
+              const name = props.NAME || props.name;
+              const admin = props.ADMIN || props.admin;
+              const nameEn = props.NAME_EN || props.name_en;
+
+              // Check multiple name fields to ensure we catch all variations
+              const possibleNames = [name, admin, nameEn].filter(Boolean);
+              return possibleNames.some((n) => Object.keys(countryData).includes(n));
+            }),
+          };
+
+          const layer = L.geoJSON(centralAsiaData, {
+            style: (feature?: Feature) => {
+              if (!feature) return {} as Leaflet.PathOptions;
+              const countryName = getCountryNameFromFeature(feature);
+              const country = countryName ? countryData[countryName as keyof typeof countryData] : null;
+              const isHovered = hoveredCountry === countryName;
+              const isSelected = selectedCountry === countryName;
+
+              return {
+                fillColor: country?.color || "#94A3B8",
+                weight: isSelected ? 3 : isHovered ? 2 : 1,
+                opacity: 1,
+                color: isSelected ? "#1F2937" : isHovered ? "#374151" : "#6B7280",
+                dashArray: "",
+                fillOpacity: isSelected ? 0.9 : isHovered ? 0.8 : 0.7,
+              };
+            },
+            onEachFeature: (feature: Feature, featLayer: Leaflet.Layer) => {
+              const countryName = getCountryNameFromFeature(feature);
+
+              featLayer.on({
+                mouseover: () => {
+                  setHoveredCountry(countryName);
+                },
+                mouseout: () => {
+                  setHoveredCountry(null);
+                },
+                click: () => {
+                  setSelectedCountry(countryName);
+                  const anyLayer = featLayer as unknown as { getBounds?: () => Leaflet.LatLngBounds; getLatLng?: () => Leaflet.LatLng };
+                  if (anyLayer.getBounds) {
+                    leafletMap.fitBounds(anyLayer.getBounds(), { padding: [20, 20] });
+                  } else if (anyLayer.getLatLng) {
+                    leafletMap.setView(anyLayer.getLatLng(), 6);
+                  }
+                },
+              });
+
+              if (countryName) {
+                (featLayer as any).bindTooltip(countryName, {
+                  permanent: false,
+                  direction: "center",
+                  className: "country-tooltip",
+                });
+              }
+            },
+          }).addTo(leafletMap);
+
+          setGeoJsonLayer(layer);
+          setIsLoaded(true);
+        } catch (error) {
+          console.error("Error loading GeoJSON data:", error);
+          setIsLoaded(true);
+        }
+
+        setMap(leafletMap);
+      }
+    };
+
+    initMap();
+  }, []);
+
+  useEffect(() => {
+    if (geoJsonLayer) {
+      geoJsonLayer.setStyle((feature?: Feature) => {
+        if (!feature) return {} as Leaflet.PathOptions;
+        const countryName = getCountryNameFromFeature(feature);
+        const country = countryName ? countryData[countryName as keyof typeof countryData] : null;
+        const isHovered = hoveredCountry === countryName;
+        const isSelected = selectedCountry === countryName;
+
+        return {
+          fillColor: country?.color || "#94A3B8",
+          weight: isSelected ? 3 : isHovered ? 2 : 1,
+          opacity: 1,
+          color: isSelected ? "#1F2937" : isHovered ? "#374151" : "#6B7280",
+          dashArray: "",
+          fillOpacity: isSelected ? 0.9 : isHovered ? 0.8 : 0.7,
+        };
+      });
+    }
+  }, [hoveredCountry, selectedCountry, geoJsonLayer]);
+
+  const getCountryNameFromFeature = (feature: Feature) => {
+    const properties: any = feature.properties as any;
+    const possibleNames = [
+      properties.NAME,
+      properties.name,
+      properties.ADMIN,
+      properties.admin,
+      properties.NAME_EN,
+      properties.name_en,
+    ];
+
+    for (const name of possibleNames) {
+      if (name && Object.keys(countryData).includes(name)) {
+        return name;
+      }
+    }
+
+    // ISO code mapping as fallback
+    const isoMapping: { [key: string]: string } = {
+      KAZ: "Kazakhstan",
+      KGZ: "Kyrgyzstan",
+      UZB: "Uzbekistan",
+      TJK: "Tajikistan",
+      TKM: "Turkmenistan",
+    };
+
+    const iso = properties.iso_a3 || properties.ISO_A3;
+    return iso ? isoMapping[iso] : null;
+  };
+
+  const selectedCountryData = selectedCountry ? countryData[selectedCountry as keyof typeof countryData] : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12">
+    <div className="mx-auto max-w-7xl px-6 py-12">
       <h1 className="text-3xl sm:text-4xl font-bold">Central Asian Explorer</h1>
       <p className="mt-3 text-muted-foreground max-w-prose">
-        Click a country or dive into a cultural area.
+        Click countries on the map to explore or dive into cultural areas.
       </p>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Interactive Country Map */}
-          <div className="rounded-2xl border p-6">
-            <h2 className="text-xl font-semibold mb-4">Central Asian Countries</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {countries.map((country) => (
-                <div
-                  key={country.name}
-                  className={`relative rounded-xl border p-4 cursor-pointer transition-all duration-200 hover:scale-105 ${
-                    selectedCountry === country.name ? 'ring-2 ring-primary' : 'hover:shadow-lg'
-                  }`}
-                  onClick={() => setSelectedCountry(selectedCountry === country.name ? null : country.name)}
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-2xl">{country.flag}</span>
-                    <div>
-                      <div className="font-semibold">{country.name}</div>
-                      <div className="text-sm text-muted-foreground">{country.capital}</div>
-                    </div>
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Interactive Map Section */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Interactive Map */}
+          <div className="rounded-2xl border overflow-hidden bg-card">
+            <div className="p-4 border-b">
+              <h2 className="text-xl font-semibold">Interactive Geographic Map</h2>
+              <p className="text-sm text-muted-foreground">Click any country to explore its details</p>
+            </div>
+            <div className="relative">
+              <div ref={mapRef} className="h-[500px] w-full" style={{ background: "#f8fafc" }} />
+              {!isLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading geographic data...</p>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                    <div>Population: {country.population}</div>
-                    <div>Area: {country.area}</div>
-                  </div>
-
-                  {selectedCountry === country.name && (
-                    <div className="mt-3 p-3 bg-secondary rounded-lg">
-                      <div className="text-sm font-medium">Did you know?</div>
-                      <div className="text-xs text-muted-foreground mt-1">{country.fact}</div>
-                    </div>
-                  )}
                 </div>
-              ))}
+              )}
             </div>
           </div>
+
+          {/* Country Information Panel */}
+          {selectedCountryData && (
+            <div className="rounded-2xl border p-6 bg-card">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">{selectedCountryData.flag}</span>
+                  <div>
+                    <h3 className="text-xl font-semibold">{selectedCountry}</h3>
+                    <p className="text-muted-foreground">{selectedCountryData.description}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedCountry(null)}
+                  className="rounded-full p-2 hover:bg-accent transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="p-3 bg-secondary rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground">Capital</div>
+                  <div className="font-semibold">{selectedCountryData.capital}</div>
+                </div>
+                <div className="p-3 bg-secondary rounded-lg">
+                  <div className="text-sm font-medium text-muted-foreground">Population</div>
+                  <div className="font-semibold">{selectedCountryData.population}</div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-sm font-medium text-muted-foreground mb-2">Cultural Highlights</div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedCountryData.highlights.map((highlight, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 rounded text-xs border"
+                      style={{
+                        backgroundColor: `${selectedCountryData.color}20`,
+                        color: selectedCountryData.color,
+                        borderColor: `${selectedCountryData.color}40`,
+                      }}
+                    >
+                      {highlight}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -89,24 +340,76 @@ export default function ExplorerPage() {
           </div>
         </div>
 
-        {/* Cultural Sections */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Explore Culture</h2>
-          {sections.map((s) => (
-            <Link 
-              key={s.href} 
-              href={s.href} 
-              className="group rounded-xl border p-4 hover:bg-accent transition-colors duration-200"
-            >
-              <div className="font-semibold flex items-center gap-2">
-                <span className="text-xl group-hover:scale-110 transition-transform duration-200">{s.emoji}</span>
-                {s.title}
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">{s.desc}</p>
-            </Link>
-          ))}
+        {/* Cultural Sections Sidebar */}
+        <div className="lg:col-span-1">
+          <h2 className="text-lg font-semibold mb-4">Explore Culture</h2>
+          <div className="space-y-3">
+            {sections.map((section) => (
+              <Link 
+                key={section.href} 
+                href={section.href} 
+                className="group block rounded-xl border p-4 hover:bg-accent transition-colors duration-200"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl group-hover:scale-110 transition-transform duration-200">
+                    {section.emoji}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm leading-tight">
+                      {section.title}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      {section.desc}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Leaflet CSS */}
+      <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossOrigin=""
+      />
+
+      <style jsx>{`
+        .country-tooltip {
+          background: rgba(15, 23, 42, 0.9) !important;
+          border: none !important;
+          border-radius: 6px !important;
+          color: white !important;
+          font-weight: 500 !important;
+          font-size: 14px !important;
+          padding: 8px 12px !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .country-tooltip::before {
+          border-top-color: rgba(15, 23, 42, 0.9) !important;
+        }
+        
+        .leaflet-control-zoom {
+          border: none !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .leaflet-control-zoom a {
+          background: white !important;
+          border: 1px solid #e2e8f0 !important;
+          color: #475569 !important;
+          font-weight: bold !important;
+        }
+        
+        .leaflet-control-zoom a:hover {
+          background: #f8fafc !important;
+          border-color: #cbd5e1 !important;
+        }
+      `}</style>
     </div>
   );
 } 

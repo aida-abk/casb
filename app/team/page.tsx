@@ -23,12 +23,20 @@ const countryMeta: Record<Country, { flag: string; accent: string; photo: string
 };
 
 const members: Member[] = [
-  { name: "Anel", role: "President", country: "Kazakhstan", major: "Computer Science", favoriteFood: "Beshbarmak", avatar: "/team/anel.jpeg" },
-  { name: "Aidin", role: "VP Events", country: "Uzbekistan", major: "Economics", favoriteFood: "Plov", avatar: "/team/aidin.png" },
-  { name: "Maria", role: "Cultural Lead", country: "Kyrgyzstan", major: "International Relations", favoriteFood: "Kuurdak", avatar: "/team/maria.png" },
-  { name: "Alloma", role: "Social Media", country: "Tajikistan", major: "Public Health", favoriteFood: "Qurutob", avatar: "/team/alloma.jpeg" },
-  { name: "Aida", role: "Communications", country: "Turkmenistan", major: "Design", favoriteFood: "Ichlekli", avatar: "/team/aida.jpeg" },
+  { name: "Anel", role: "President", country: "Kazakhstan", major: "Comp Neuro", favoriteFood: "Beshbarmak", avatar: "/team/anel.jpeg" },
+  { name: "Aidin", role: "Treasurer", country: "Kyrgyzstan", major: "CS", favoriteFood: "Plov", avatar: "/team/aidin.png" },
+  { name: "Maria", role: "Treasurer", country: "Kazakhstan", major: "Public Health", favoriteFood: "Beshbarmak", avatar: "/team/maria.png" },
+  { name: "Alloma", role: "Social Media", country: "Uzbekistan", major: "IAPA & Economics", favoriteFood: "Plov", avatar: "/team/alloma.jpeg" },
+  { name: "Aida", role: "Webdev", country: "Kazakhstan", major: "Neuroscience", favoriteFood: "Quyrdak", avatar: "/team/aida.jpeg" },
 ];
+
+
+
+
+
+
+
+
 
 function FlipCard({ member, index }: { member: Member; index: number }) {
   const [flipped, setFlipped] = useState(false);

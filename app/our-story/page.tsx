@@ -34,10 +34,15 @@ function TimelineEvent({ date, title, description, imageUrl, side }: TimelineEve
   return (
     <div 
       ref={ref}
-      className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start transition-all duration-700 ${
+      className={`relative pl-12 lg:pl-0 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start transition-all duration-700 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
+      {/* Mobile timeline dot */}
+      <span
+        aria-hidden
+        className="lg:hidden absolute left-[18px] top-3 h-3 w-3 rounded-full bg-primary ring-2 ring-background"
+      />
       {/* Text Content - conditionally ordered */}
       <div className={`flex flex-col ${
         side === 'left' 
@@ -46,7 +51,7 @@ function TimelineEvent({ date, title, description, imageUrl, side }: TimelineEve
       }`}>
         <div className="space-y-4">
           {/* Date Badge */}
-          <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs bg-background w-fit ${
+          <div className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] sm:text-xs bg-background w-fit ${
             side === 'left' ? 'lg:ml-auto' : ''
           }`}>
             <span>{date}</span>
@@ -54,8 +59,8 @@ function TimelineEvent({ date, title, description, imageUrl, side }: TimelineEve
           
           {/* Title and Description */}
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold">{title}</h3>
-            <p className="text-muted-foreground">{description}</p>
+            <h3 className="text-lg sm:text-xl font-semibold">{title}</h3>
+            <p className="text-sm sm:text-base text-muted-foreground">{description}</p>
           </div>
         </div>
       </div>
@@ -126,7 +131,7 @@ export default function OurStoryPage() {
       
       <div 
         ref={timelineRef}
-        className="mt-12 relative"
+        className="mt-10 sm:mt-12 relative"
       >
         {/* Center Timeline Line */}
         <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-border transform -translate-x-1/2">
@@ -147,7 +152,7 @@ export default function OurStoryPage() {
         </div>
         
         {/* Timeline Events */}
-        <div className="space-y-16 lg:space-y-20">
+        <div className="space-y-12 sm:space-y-16 lg:space-y-20">
           {milestones.map((milestone, index) => (
             <TimelineEvent
               key={milestone.date}
