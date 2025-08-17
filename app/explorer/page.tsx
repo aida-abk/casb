@@ -240,28 +240,28 @@ export default function ExplorerPage() {
   const selectedCountryData = selectedCountry ? countryData[selectedCountry as keyof typeof countryData] : null;
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-12">
-      <h1 className="text-3xl sm:text-4xl font-bold">Central Asian Explorer</h1>
-      <p className="mt-3 text-muted-foreground max-w-prose">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Central Asian Explorer</h1>
+      <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground max-w-prose">
         Click countries on the map to explore or dive into cultural areas.
       </p>
 
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
         {/* Interactive Map Section */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4 sm:space-y-6">
           {/* Interactive Map */}
-          <div className="rounded-2xl border overflow-hidden bg-card">
-            <div className="p-4 border-b">
-              <h2 className="text-xl font-semibold">Interactive Geographic Map</h2>
-              <p className="text-sm text-muted-foreground">Click any country to explore its details</p>
+          <div className="rounded-xl sm:rounded-2xl border overflow-hidden bg-card">
+            <div className="p-3 sm:p-4 border-b">
+              <h2 className="text-lg sm:text-xl font-semibold">Interactive Geographic Map</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">Click any country to explore its details</p>
             </div>
             <div className="relative">
-              <div ref={mapRef} className="h-[500px] w-full" style={{ background: "#f8fafc" }} />
+              <div ref={mapRef} className="h-[300px] sm:h-[400px] lg:h-[500px] w-full" style={{ background: "#f8fafc" }} />
               {!isLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-muted-foreground">Loading geographic data...</p>
+                    <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary mx-auto mb-3 sm:mb-4"></div>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Loading geographic data...</p>
                   </div>
                 </div>
               )}
@@ -270,37 +270,37 @@ export default function ExplorerPage() {
 
           {/* Country Information Panel */}
           {selectedCountryData && (
-            <div className="rounded-2xl border p-6 bg-card">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{selectedCountryData.flag}</span>
-                  <div>
-                    <h3 className="text-xl font-semibold">{selectedCountry}</h3>
-                    <p className="text-muted-foreground">{selectedCountryData.description}</p>
+            <div className="rounded-xl sm:rounded-2xl border p-4 sm:p-6 bg-card">
+              <div className="flex items-start justify-between mb-3 sm:mb-4">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                  <span className="text-2xl sm:text-3xl">{selectedCountryData.flag}</span>
+                  <div className="min-w-0">
+                    <h3 className="text-lg sm:text-xl font-semibold truncate">{selectedCountry}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{selectedCountryData.description}</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setSelectedCountry(null)}
-                  className="rounded-full p-2 hover:bg-accent transition-colors"
+                  className="rounded-full p-1.5 sm:p-2 hover:bg-accent transition-colors flex-shrink-0 ml-2"
                 >
                   ✕
                 </button>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="p-3 bg-secondary rounded-lg">
-                  <div className="text-sm font-medium text-muted-foreground">Capital</div>
-                  <div className="font-semibold">{selectedCountryData.capital}</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="p-2 sm:p-3 bg-secondary rounded-lg">
+                  <div className="text-xs sm:text-sm font-medium text-muted-foreground">Capital</div>
+                  <div className="font-semibold text-sm sm:text-base">{selectedCountryData.capital}</div>
                 </div>
-                <div className="p-3 bg-secondary rounded-lg">
-                  <div className="text-sm font-medium text-muted-foreground">Population</div>
-                  <div className="font-semibold">{selectedCountryData.population}</div>
+                <div className="p-2 sm:p-3 bg-secondary rounded-lg">
+                  <div className="text-xs sm:text-sm font-medium text-muted-foreground">Population</div>
+                  <div className="font-semibold text-sm sm:text-base">{selectedCountryData.population}</div>
                 </div>
               </div>
               
               <div>
-                <div className="text-sm font-medium text-muted-foreground mb-2">Cultural Highlights</div>
-                <div className="flex flex-wrap gap-2">
+                <div className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">Cultural Highlights</div>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {selectedCountryData.highlights.map((highlight, index) => (
                     <span
                       key={index}
@@ -320,21 +320,21 @@ export default function ExplorerPage() {
           )}
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="rounded-xl border p-4 text-center">
-              <div className="text-2xl font-bold text-primary">5</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="rounded-xl border p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-primary">5</div>
               <div className="text-xs text-muted-foreground">Countries</div>
             </div>
-            <div className="rounded-xl border p-4 text-center">
-              <div className="text-2xl font-bold text-primary">75M+</div>
+            <div className="rounded-xl border p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-primary">75M+</div>
               <div className="text-xs text-muted-foreground">Total Population</div>
             </div>
-            <div className="rounded-xl border p-4 text-center">
-              <div className="text-2xl font-bold text-primary">4M</div>
+            <div className="rounded-xl border p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-primary">4M</div>
               <div className="text-xs text-muted-foreground">km² Area</div>
             </div>
-            <div className="rounded-xl border p-4 text-center">
-              <div className="text-2xl font-bold text-primary">100+</div>
+            <div className="rounded-xl border p-3 sm:p-4 text-center">
+              <div className="text-xl sm:text-2xl font-bold text-primary">100+</div>
               <div className="text-xs text-muted-foreground">Languages</div>
             </div>
           </div>
@@ -342,20 +342,20 @@ export default function ExplorerPage() {
 
         {/* Cultural Sections Sidebar */}
         <div className="lg:col-span-1">
-          <h2 className="text-lg font-semibold mb-4">Explore Culture</h2>
-          <div className="space-y-3">
+          <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Explore Culture</h2>
+          <div className="space-y-2 sm:space-y-3">
             {sections.map((section) => (
               <Link 
                 key={section.href} 
                 href={section.href} 
-                className="group block rounded-xl border p-4 hover:bg-accent transition-colors duration-200"
+                className="group block rounded-xl border p-3 sm:p-4 hover:bg-accent transition-colors duration-200"
               >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl group-hover:scale-110 transition-transform duration-200">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <span className="text-xl sm:text-2xl group-hover:scale-110 transition-transform duration-200">
                     {section.emoji}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm leading-tight">
+                    <div className="font-semibold text-xs sm:text-sm leading-tight">
                       {section.title}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
