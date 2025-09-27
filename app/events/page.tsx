@@ -229,6 +229,32 @@ export default function EventsPage() {
           initialImageIndex={selectedEvent.initialIndex}
         />
       )}
+
+      {/* News & Publications Disclaimer */}
+      <footer className="mt-12 pt-8 border-t border-border/50">
+        <div className="text-xs text-muted-foreground leading-relaxed max-w-5xl text-center">
+          <p>
+            The content of all{" "}
+            <Link href="https://www.brownucs.org/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
+              News & Publications groups recognized by UCS/GSC
+            </Link>{" "}
+            is generated independently from{" "}
+            <Link href="https://www.brown.edu/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
+              Brown University
+            </Link>
+            . The statements, views, opinions, and information contained in the publication are personal to those of the authors and 
+            student group and do not necessarily reflect those of{" "}
+            <Link href="https://www.brown.edu/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
+              Brown University
+            </Link>
+            . The publication is not reviewed, approved, or endorsed by{" "}
+            <Link href="https://www.brown.edu/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">
+              Brown University
+            </Link>{" "}
+            or its faculty or staff.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 } 
