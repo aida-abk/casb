@@ -89,7 +89,7 @@ export const updateRSVPCount = (eventId: string, newCount: number) => {
 
 // Google Calendar configuration
 export const calendarConfig = {
-  embedUrl: "https://calendar.google.com/calendar/embed?src=casb%40brown.edu&ctz=Asia%2FAlmaty&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=0",
-  directUrl: "https://calendar.google.com/calendar/embed?src=casb%40brown.edu&ctz=Asia%2FAlmaty",
-  timezone: "Asia/Almaty"
+  embedUrl: "https://calendar.google.com/calendar/embed?src=c_c9678c6f198b58a759dd6004a4d8f77897d502095e4c4fa12019b33f1a4e027e%40group.calendar.google.com&ctz=America%2FNew_York&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=0",
+  directUrl: "https://calendar.google.com/calendar/embed?src=c_c9678c6f198b58a759dd6004a4d8f77897d502095e4c4fa12019b33f1a4e027e%40group.calendar.google.com&ctz=America%2FNew_York",
+  timezone: "America/New_York"
 }; 
